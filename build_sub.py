@@ -3,7 +3,7 @@ import time
 from typing import List, Tuple
 
 # ---------- تنظیمات ----------
-NODE_COUNT = 6            # چند تا کانفیگ بسازیم
+NODE_COUNT = 7            # چند تا کانفیگ بسازیم
 TIMEOUT = 0.8             # حداکثر زمان تست هر IP (ثانیه)
 LATENCY_THRESHOLD = 0.20  # 200ms
 
@@ -23,6 +23,8 @@ BASE_LINKS = [
     "vless://469c4b8e-53b4-4cac-bde7-d5408613bd02@IP_PLACEHOLDER:443?encryption=none&security=tls&sni=Shrill-BASE-dB4e.trapsLIfeE.wOrKeRs.Dev&fp=firefox&alpn=http%2F1.1&insecure=0&allowInsecure=0&type=ws&host=shrill-base-db4e.trapslifee.workers.dev&path=%2FeyJqdW5rIjoiU3dSdnp6cTBCcWh5ZmQiLCJwcm90b2NvbCI6InZsIiwibW9kZSI6InByb3h5aXAiLCJwYW5lbElQcyI6WyIxMDQuMjM4LjI0Ljk5Il19%3Fed%3D2560",
     # 6
     "vless://bd977f6e-fd3a-48b5-817a-1572571cc5a5@IP_PLACEHOLDER:443?encryption=none&security=tls&sni=gwagworld.trapslifee.workers.dev&fp=random&insecure=0&allowInsecure=0&type=ws&host=gwagworld.trapslifee.workers.dev&path=%2Fphp%2Fproxyip%3D68.183.213.79",
+    # 7: کانفیگ جدید فنلاند
+    "vless://469c4b8e-53b4-4cac-bde7-d5408613bd02@IP_PLACEHOLDER:443?encryption=none&security=tls&sni=SHrILL-BAse-DB4E.tRapSlifEE.WORkErS.dEV&fp=random&alpn=http%2F1.1&insecure=0&allowInsecure=0&type=ws&host=shrill-base-db4e.trapslifee.workers.dev&path=%2FeyJqdW5rIjoidVQzRzJDMk5zVmJJUXJCWSIsInByb3RvY29sIjoidmwiLCJtb2RlIjoicHJveHlpcCIsInBhbmVsSVBzIjpbIjIxNy42MC42MS4xMCJdfQ%3D%3D%3Fed%3D2560",
 ]
 
 def load_clean_ips_from_file(path: str) -> List[str]:

@@ -32,23 +32,23 @@ CLEAN_IPS = [
 ]
 
 # ---------- تنظیمات ----------
-NODE_COUNT = 6           # تعداد کانفیگ‌ها
-TIMEOUT = 0.8           # حداکثر زمان برای هر تست (ثانیه)
-LATENCY_THRESHOLD = 0.2  # حداکثر پینگ قابل قبول (ثانیه) = 200ms
+NODE_COUNT = 6            # چند تا کانفیگ بسازیم
+TIMEOUT = 0.8             # حداکثر زمان تست هر IP (ثانیه)
+LATENCY_THRESHOLD = 0.20  # حداکثر پینگ قابل قبول (ثانیه) = 200ms
 
 # ---------- قالب لینک‌ها ----------
 BASE_LINKS = [
-    # 1: کانفیگ اول
+    # 1
     "vless://469c4b8e-53b4-4cac-bde7-d5408613bd02@IP_PLACEHOLDER:443?encryption=none&security=tls&sni=shRILl-bAse-dB4e.TRApsliFee.woRKeRs.DeV&fp=safari&alpn=http%2F1.1&insecure=0&allowInsecure=0&type=ws&host=shrill-base-db4e.trapslifee.workers.dev&path=%2FeyJqdW5rIjoiOHllTWFicWk0d1NyY1YiLCJwcm90b2NvbCI6InZsIiwibW9kZSI6InByb3h5aXAiLCJwYW5lbElQcyI6WyI0NS4xMi4xNDMuNzMiXX0%3D%3Fed%3D2560",
-    # 2: کانفیگ دوم
+    # 2
     "vless://469c4b8e-53b4-4cac-bde7-d5408613bd02@IP_PLACEHOLDER:443?encryption=none&security=tls&sni=SHrill-base-dB4E.trAPslIfEE.WORkers.dEV&fp=safari&alpn=http%2F1.1&insecure=0&allowInsecure=0&type=ws&host=shrill-base-db4e.trapslifee.workers.dev&path=%2FeyJqdW5rIjoiTWRlbzVBdkJIIiwicHJvdG9jb2wiOiJ2bCIsIm1vZGUiOiJwcm94eWlwIiwicGFuZWxJUHMiOlsiNDUuMTIuMTQzLjczIl19%3Fed%3D2560",
-    # 3: کانفیگ سوم
+    # 3
     "vless://469c4b8e-53b4-4cac-bde7-d5408613bd02@IP_PLACEHOLDER:443?encryption=none&security=tls&sni=sHRIll-base-DB4e.TRAPSLifEe.WoRkERS.dEv&fp=chrome&alpn=http%2F1.1&insecure=0&allowInsecure=0&type=ws&host=shrill-base-db4e.trapslifee.workers.dev&path=%2FeyJqdW5rIjoiVFJ1RWxBaE5FIiwicHJvdG9jb2wiOiJ2bCIsIm1vZGUiOiJwcm94eWlwIiwicGFuZWxJUHMiOlsiNDYuOC42NC4yMzIiXX0%3Fed%3D2560",
-    # 4: کانفیگ چهارم
+    # 4
     "vless://469c4b8e-53b4-4cac-bde7-d5408613bd02@IP_PLACEHOLDER:443?encryption=none&security=tls&sni=ShRIll-Base-db4E.TRaPsLIfeE.wOrKeRs.DEV&fp=chrome&alpn=http%2F1.1&insecure=0&allowInsecure=0&type=ws&host=shrill-base-db4e.trapslifee.workers.dev&path=%2FeyJqdW5rIjoicmJwc1hvT1lkIiwicHJvdG9jb2wiOiJ2bCIsIm1vZGUiOiJwcm94eWlwIiwicGFuZWxJUHMiOlsiMTk0LjUuOTguMTciXX0%3Fed%3D2560",
-    # 5: کانفیگ پنجم
+    # 5
     "vless://469c4b8e-53b4-4cac-bde7-d5408613bd02@IP_PLACEHOLDER:443?encryption=none&security=tls&sni=Shrill-BASE-dB4e.trapsLIfeE.wOrKeRs.Dev&fp=firefox&alpn=http%2F1.1&insecure=0&allowInsecure=0&type=ws&host=shrill-base-db4e.trapslifee.workers.dev&path=%2FeyJqdW5rIjoiU3dSdnp6cTBCcWh5ZmQiLCJwcm90b2NvbCI6InZsIiwibW9kZSI6InByb3h5aXAiLCJwYW5lbElQcyI6WyIxMDQuMjM4LjI0Ljk5Il19%3Fed%3D2560",
-    # 6: کانفیگ ششم
+    # 6
     "vless://bd977f6e-fd3a-48b5-817a-1572571cc5a5@IP_PLACEHOLDER:443?encryption=none&security=tls&sni=gwagworld.trapslifee.workers.dev&fp=random&insecure=0&allowInsecure=0&type=ws&host=gwagworld.trapslifee.workers.dev&path=%2Fphp%2Fproxyip%3D68.183.213.79",
 ]
 
@@ -68,7 +68,13 @@ def rank_ips(ips: List[str]) -> List[Tuple[str, float]]:
     print("Testing IPs...")
     for ip in ips:
         t = test_ip_tcp(ip)
-        print(f"{ip} -> {t:.3f} s")
+        if t >= 999.0:
+            status = "TIMEOUT"
+        elif t < LATENCY_THRESHOLD:
+            status = "OK"
+        else:
+            status = "SLOW"
+        print(f"{ip} -> {t:.3f} s [{status}]")
         results.append((ip, t))
     results.sort(key=lambda x: x[1])
     return results
@@ -77,7 +83,7 @@ def build_sub(best_ranked: List[Tuple[str, float]]) -> str:
     lines = []
     for i in range(NODE_COUNT):
         ip, latency = best_ranked[i % len(best_ranked)]
-        ping_label = i + 1  # PING 1..PING 6
+        ping_label = i + 1  # 1..6
         lat_ms = int(latency * 1000)
         name = f"PING {ping_label} ({lat_ms}ms) IRANCELL"
         base = BASE_LINKS[i]
@@ -99,7 +105,7 @@ if __name__ == "__main__":
         for ip, t in usable:
             print(f"  {ip} -> {t:.3f} s")
 
-    # تا NODE_COUNT تا از بهترین‌ها را نگه می‌داریم
+    # انتخاب بهترین IPها برای کانفیگ‌ها
     best_ranked = usable[:NODE_COUNT] if len(usable) >= NODE_COUNT else usable
 
     content = build_sub(best_ranked)

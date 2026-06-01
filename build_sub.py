@@ -2,39 +2,12 @@ import socket
 import time
 from typing import List, Tuple
 
-# ---------- Clean IPs ----------
-CLEAN_IPS = [
-    "162.159.194.33",
-    "104.17.230.63",
-    "104.24.188.206",
-    "104.24.186.196",
-    "104.25.199.108",
-    "198.41.215.17",
-    "104.24.242.191",
-    "104.16.142.24",
-    "172.67.64.252",
-    "172.65.125.18",
-    "198.41.195.194",
-    "172.67.65.42",
-    "190.93.245.15",
-    "104.18.45.163",
-    "8.39.125.112",
-    "104.24.186.102",
-    "172.67.176.232",
-    "172.66.214.39",
-    "104.16.191.231",
-    "104.19.48.143",
-    "104.18.98.172",
-    "104.24.190.39",
-    "104.16.219.209",
-    "104.19.47.162",
-    "104.17.194.130",
-]
-
 # ---------- تنظیمات ----------
 NODE_COUNT = 6            # چند تا کانفیگ بسازیم
 TIMEOUT = 0.8             # حداکثر زمان تست هر IP (ثانیه)
-LATENCY_THRESHOLD = 0.20  # حداکثر پینگ قابل قبول (ثانیه) = 200ms
+LATENCY_THRESHOLD = 0.20  # 200ms
+
+CF_CLEAN_FILE = "cf_clean.txt"
 
 # ---------- قالب لینک‌ها ----------
 BASE_LINKS = [
@@ -52,6 +25,19 @@ BASE_LINKS = [
     "vless://bd977f6e-fd3a-48b5-817a-1572571cc5a5@IP_PLACEHOLDER:443?encryption=none&security=tls&sni=gwagworld.trapslifee.workers.dev&fp=random&insecure=0&allowInsecure=0&type=ws&host=gwagworld.trapslifee.workers.dev&path=%2Fphp%2Fproxyip%3D68.183.213.79",
 ]
 
+def load_clean_ips_from_file(path: str) -> List[str]:
+    ips: List[str] = []
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                parts = line.strip().split()
+                if not parts:
+                    continue
+                ips.append(parts[0])
+    except FileNotFoundError:
+        print(f"{path} not found. Run scan_cf_ips.py first.")
+    return ips
+
 def test_ip_tcp(ip: str, port: int = 443, timeout: float = TIMEOUT) -> float:
     start = time.time()
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -65,7 +51,7 @@ def test_ip_tcp(ip: str, port: int = 443, timeout: float = TIMEOUT) -> float:
 
 def rank_ips(ips: List[str]) -> List[Tuple[str, float]]:
     results: List[Tuple[str, float]] = []
-    print("Testing IPs...")
+    print("Testing clean IPs from cf_clean.txt ...")
     for ip in ips:
         t = test_ip_tcp(ip)
         if t >= 999.0:
@@ -83,7 +69,7 @@ def build_sub(best_ranked: List[Tuple[str, float]]) -> str:
     lines = []
     for i in range(NODE_COUNT):
         ip, latency = best_ranked[i % len(best_ranked)]
-        ping_label = i + 1  # 1..6
+        ping_label = i + 1
         lat_ms = int(latency * 1000)
         name = f"PING {ping_label} ({lat_ms}ms) IRANCELL"
         base = BASE_LINKS[i]
@@ -92,24 +78,22 @@ def build_sub(best_ranked: List[Tuple[str, float]]) -> str:
     return "\n".join(lines) + "\n"
 
 if __name__ == "__main__":
-    ranked = rank_ips(CLEAN_IPS)
+    ips = load_clean_ips_from_file(CF_CLEAN_FILE)
+    if not ips:
+        print("No clean IPs loaded. Make sure cf_clean.txt exists and is not empty.")
+        exit(1)
 
-    # فقط IPهای زیر threshold را نگه می‌داریم
-    usable = [item for item in ranked if item[1] < LATENCY_THRESHOLD]
+    ranked = rank_ips(ips)
 
+    usable = [item for item in ranked if item[1] < 999.0]
     if not usable:
-        print("No IP under threshold, using best of all.")
+        print("All clean IPs timed out. Using ranked list anyway.")
         usable = ranked.copy()
-    else:
-        print("Reachable IPs under threshold (best to worst):")
-        for ip, t in usable:
-            print(f"  {ip} -> {t:.3f} s")
 
-    # انتخاب بهترین IPها برای کانفیگ‌ها
     best_ranked = usable[:NODE_COUNT] if len(usable) >= NODE_COUNT else usable
 
     content = build_sub(best_ranked)
     with open("sub.txt", "w", encoding="utf-8") as f:
         f.write(content)
 
-    print("sub.txt built with best IPs and PING labels.")
+    print("sub.txt built from cf_clean.txt with best IPs.")

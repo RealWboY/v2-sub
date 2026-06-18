@@ -1,1 +1,1 @@
-vless://bd977f6e-fd3a-48b5-817a-1572571cc5a5@198.41.215.75:443?encryption=none&security=tls&sni=gwagworld.trapslifee.workers.dev&fp=random&insecure=0&allowInsecure=0&type=ws&host=gwagworld.trapslifee.workers.dev&path=%2Fdm%2Fhttp%3D1234%3A1234%4018.194.239.151%3A2080#germany
+vless://bd977f6e-fd3a-48b5-817a-1572571cc5a5@104.25.43.36:443?encryption=none&security=tls&sni=gwagworld.trapslifee.workers.dev&fp=random&insecure=0&allowInsecure=0&type=ws&host=gwagworld.trapslifee.workers.dev&path=%2Fdm%2Fhttp%3D1234%3A1234%4018.194.239.151%3A2080#germany
